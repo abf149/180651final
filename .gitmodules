@@ -1,0 +1,3 @@
+[submodule "data/Optimal-SPCA"]
+	path = data/Optimal-SPCA
+	url = https://github.com/lauren897/Optimal-SPCA.git
