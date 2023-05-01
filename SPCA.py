@@ -2,6 +2,7 @@ from numpy import mean
 from numpy import std
 from numpy import absolute
 from numpy.linalg import svd
+from numpy.linalg import qr
 import numpy as np
 from pandas import read_csv
 from sklearn.model_selection import cross_val_score
