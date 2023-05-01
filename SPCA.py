@@ -2,7 +2,6 @@ from numpy import mean
 from numpy import std
 from numpy import absolute
 from numpy.linalg import svd
-from numpy.linalg import qr
 import numpy as np
 from pandas import read_csv
 from sklearn.model_selection import cross_val_score
@@ -75,6 +74,7 @@ def SPCA(data,k,max_iter=100,alpha=0.5,l1_ratio=1.0,verbose=False):
   Vprev=V # for tracking convergence
   B=np.random.rand(p,k) # elastic net intermediate results
   logprint("-- B0:",B.shape[0],"x",B.shape[1])
+  logprint(B)
   logprint("- Solve")
   for idx in range(max_iter):
     logprint("-- idx=",idx)
@@ -114,6 +114,7 @@ def SPCA(data,k,max_iter=100,alpha=0.5,l1_ratio=1.0,verbose=False):
       y=Y[:,jdx]
       B[:,jdx]=model.fit(X,y).coef_ # Get fitted coefficients
     logprint("-- B:",B.shape[0],"x",B.shape[1])
+    logprint(B)
     #
     # 5. Update: A = u[:,0:k] v_h^T, where u, s, v_h = SVD(X^T XB)
     #
