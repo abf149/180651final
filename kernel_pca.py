@@ -31,6 +31,21 @@ def rbf_kernel(X, Y=None, gamma=None):
     K = np.exp(-1*gamma*l2(X, Y))
     return K
 
+
+def poly_kernel(X, Y=None, degree=3, gamma=1, coef0=0):
+    '''
+    Compute the polynomial kernel between X and Y.
+
+    K(X, Y) = (gamma <X, Y> + coef0)^{degree}
+    '''
+    if Y is None:
+        Y = X
+    K = np.dot(X, Y.T, dense_output=True)
+    K *= gamma
+    K += coef0
+    K **= degree
+    return K
+
 # Center the kernel matrix
 
 
@@ -47,13 +62,13 @@ def center_kernel(K):
 # switch the mode to either 'transform' or 'recon'
 
 
-def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mode='recon', alpha=1):
+def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mode='recon', alpha=1, degree=3):
 
     if kernel == 'rbf':
         K = rbf_kernel(X_train, gamma=gamma)
-        K, K_fit_rows, K_fit_all = center_kernel(K)
-    else:
-        pass
+    elif kernel == 'poly':
+        K = poly_kernel(X_train, degree=degree)
+    K, K_fit_rows, K_fit_all = center_kernel(K)
 
     if n_components is None:
         n_components = K.shape[0]
@@ -95,10 +110,16 @@ def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mod
 
     elif mode == 'recon':
         n_samples = X_transformed.shape[0]
-        K = rbf_kernel(X_transformed, gamma=gamma)
+        if kernel == 'rbf':
+            K = rbf_kernel(X_transformed, gamma=gamma)
+        elif kernel == 'poly':
+            K = poly_kernel(X_transformed, degree=degree)
         K.flat[:: n_samples + 1] += alpha
         dual_coef = linalg.solve(K, X_train, assume_a="pos", overwrite_a=True)
-        K = rbf_kernel(X_test_transformed, X_transformed, gamma=gamma)
+        if kernel == 'rbf':
+            K = rbf_kernel(X_test_transformed, X_transformed, gamma=gamma)
+        elif kernel == 'poly':
+            K = poly_kernel(X_test_transformed, X_transformed, degree=degree)
         X_test_recon = np.dot(K, dual_coef)
         err = mean_squared_error(X_test, X_test_recon)
         return X_test_recon, err
