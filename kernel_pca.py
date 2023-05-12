@@ -47,7 +47,7 @@ def center_kernel(K):
 # switch the mode to either 'transform' or 'recon'
 
 
-def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, c=None, mode='recon', alpha=1):
+def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mode='recon', alpha=1):
 
     if kernel == 'rbf':
         K = rbf_kernel(X_train, gamma=gamma)
@@ -95,10 +95,10 @@ def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, c=N
 
     elif mode == 'recon':
         n_samples = X_transformed.shape[0]
-        K = rbf_kernel(X_transformed, gamma=n_components*c)
+        K = rbf_kernel(X_transformed, gamma=gamma)
         K.flat[:: n_samples + 1] += alpha
         dual_coef = linalg.solve(K, X_train, assume_a="pos", overwrite_a=True)
-        K = rbf_kernel(X_test_transformed, X_transformed, gamma=n_components*c)
+        K = rbf_kernel(X_test_transformed, X_transformed, gamma=gamma)
         X_test_recon = np.dot(K, dual_coef)
         err = mean_squared_error(X_test, X_test_recon)
-        return err
+        return X_test_recon, err
