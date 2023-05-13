@@ -118,7 +118,6 @@ def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mod
         return X_test_transformed, eigenvectors, eigenvalues
 
     elif mode == 'recon':
-        print('reconstructing test data')
         n_samples = X_transformed.shape[0]
         if kernel == 'rbf':
             K = rbf_kernel(X_transformed, gamma=gamma)
