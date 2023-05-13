@@ -1,5 +1,5 @@
 import math
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import tensorflow as tf
 from matplotlib import pyplot as plt
 import numpy as np
@@ -14,7 +14,7 @@ import math
 
 
 def spca_exp(X_train, X_test, k):
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -47,7 +47,7 @@ def spca_exp(X_train, X_test, k):
 
 def spca_exp_faces(X_train, X_test, k, h, w):
     # h is the height of each face, w is the width of each face
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -82,7 +82,7 @@ def spca_exp_faces(X_train, X_test, k, h, w):
 
 
 def kernel_exp(X_train, X_test, k):
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -142,7 +142,7 @@ def plot3clusters(X, title, vtitle, target_names):
 
 
 def autoencoder_exp(X_train, X_test, k):
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -171,7 +171,7 @@ def autoencoder_exp(X_train, X_test, k):
     autoencoder.summary()
 
     # Set other parameters
-    epochs = 50
+    epochs = 1000
     batch_size = 16
     shuffle = True
     validation_split = 0.1
@@ -212,9 +212,14 @@ def autoencoder_exp(X_train, X_test, k):
 def nmf_exp(X_train, X_test, k):
     print("\n\nBest NMF:")
 
+    scaler = MinMaxScaler()
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)    
+    
     # Perform NMF
     model = NMF(n_components=k, init='random', random_state=109)
-    W_train = model.fit_transform(X_train)
+    W_train = model.fit_transform(X_train_scaled)
     H_train = model.components_
 
     # Print the basis vectors and the coefficients
@@ -223,14 +228,20 @@ def nmf_exp(X_train, X_test, k):
 
     # Reconstruct train data and compute MSE
     X_train_reconstructed = np.dot(W_train, H_train)
-    train_mse = np.mean((X_train - X_train_reconstructed) ** 2)
+    
+    train_mse = mean_squared_error(
+        X_train, scaler.inverse_transform(X_train_reconstructed))    
+    
     print('\n\nBest MSE reconstruction error on train data:', train_mse)
 
     # Reconstruct test data and compute MSE
-    W_test = model.transform(X_test)
+    W_test = model.transform(X_test_scaled)
     H_test = model.components_
     X_test_reconstructed = np.dot(W_test, H_test)
-    test_mse = np.mean((X_test - X_test_reconstructed) ** 2)
+    
+    test_mse = mean_squared_error(
+        X_test, scaler.inverse_transform(X_test_reconstructed))
+    
     print('Best MSE reconstruction error on test data:', test_mse)
 
     return train_mse, test_mse
@@ -239,9 +250,14 @@ def nmf_exp(X_train, X_test, k):
 def nmf_exp_faces(X_train, X_test, k, h, w):
     print("\n\nBest NMF:")
 
+    scaler = MinMaxScaler()
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)      
+    
     # Perform NMF
     model = NMF(n_components=k, init='random', random_state=109)
-    W_train = model.fit_transform(X_train)
+    W_train = model.fit_transform(X_train_scaled)
     H_train = model.components_
     eigenfaces_nmf = model.components_.reshape((k, h, w))
 
@@ -251,14 +267,16 @@ def nmf_exp_faces(X_train, X_test, k, h, w):
 
     # Reconstruct train data and compute MSE
     X_train_reconstructed = np.dot(W_train, H_train)
-    train_mse = np.mean((X_train - X_train_reconstructed) ** 2)
+    train_mse = mean_squared_error(
+        X_train, scaler.inverse_transform(X_train_reconstructed))   
     print('\n\nBest MSE reconstruction error on train data:', train_mse)
 
     # Reconstruct test data and compute MSE
-    W_test = model.transform(X_test)
+    W_test = model.transform(X_test_scaled)
     H_test = model.components_
     X_test_reconstructed = np.dot(W_test, H_test)
-    test_mse = np.mean((X_test - X_test_reconstructed) ** 2)
+    test_mse = mean_squared_error(
+        X_test, scaler.inverse_transform(X_test_reconstructed))
     print('Best MSE reconstruction error on test data:', test_mse)
 
     return train_mse, test_mse, eigenfaces_nmf
