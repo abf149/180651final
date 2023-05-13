@@ -196,9 +196,12 @@ def autoencoder_exp(X_train, X_test, k):
 
     # Compute MSE on train and test data
     autoencoder_err_train = mean_squared_error(
-        X_train_scaled, autoencoder(X_train_scaled))
+        X_train, scaler.inverse_transform(autoencoder(X_train_scaled)))
+    
+    
+    
     autoencoder_err_test = mean_squared_error(
-        X_test_scaled, autoencoder(X_test_scaled))
+        X_test, scaler.inverse_transform(autoencoder(X_test_scaled)))
     print("MSE on training data:", autoencoder_err_train)
     print("MSE on test data:", autoencoder_err_test)
 
