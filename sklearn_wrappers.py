@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 
 # SparsePCA(n_components=k, alpha=1, ridge_alpha=0.01, max_iter=1000, tol=1e-08, method='lars', n_jobs=1, U_init=None, V_init=None, verbose=False, random_state=None)
 
-def spca_exp(X_scaled, k):
+def spca_exp(X_train, X_test, k):
     alpha_vals = [0.001, 0.002, 0.005, 0.01, 0.02,
                   0.05, 0.10, 0.20, 0.50, 1.0, 2.0, 5.0]
     ridge_alpha = 0.0
@@ -38,11 +38,10 @@ def spca_exp(X_scaled, k):
     for idx in range(len(alpha_vals)):
         alpha = alpha_vals[idx]
         spca = SparsePCA(n_components=k, ridge_alpha=ridge_alpha, alpha=alpha)
-        spca.fit(X_scaled)
-        V = spca.components_.transpose()
-        Z = spca.transform(X_scaled)
-        X_preimage = Z @ V.transpose()
-        spca_err = mean_squared_error(X_scaled, X_preimage)
+        spca.fit(X_train)
+        X_test_reduced = spca.transform(X_test)
+        X_test_recon = spca.inverse_transform(X_test_reduced)
+        spca_err = mean_squared_error(X_test, X_test_recon)
         print("alpha=", alpha, "err=", spca_err)
         if spca_err < best_spca_alpha_err:
             best_spca_alpha_err = spca_err
@@ -55,7 +54,7 @@ def spca_exp(X_scaled, k):
     return best_spca_alpha, best_spca_alpha_err
 
 
-def spca_exp_faces(X_scaled, k, h, w):
+def spca_exp_faces(X_train, X_test, k, h, w):
     # h is the height of each face, w is the width of each face
     alpha_vals = [0.001, 0.002, 0.005, 0.01, 0.02]
     ridge_alpha = 0.0
@@ -64,11 +63,11 @@ def spca_exp_faces(X_scaled, k, h, w):
     best_spca_alpha_err = math.inf
     for idx in range(len(alpha_vals)):
         alpha = alpha_vals[idx]
-        spca = SparsePCA(n_components=k, ridge_alpha=ridge_alpha,
-                         alpha=alpha).fit(X_scaled)
-        X_reduced = spca.transform(X_scaled)
-        X_recon = spca.inverse_transform(X_reduced)
-        spca_err = mean_squared_error(X_scaled, X_recon)
+        spca = SparsePCA(n_components=k, ridge_alpha=ridge_alpha, alpha=alpha)
+        spca.fit(X_train)
+        X_test_reduced = spca.transform(X_test)
+        X_test_recon = spca.inverse_transform(X_test_reduced)
+        spca_err = mean_squared_error(X_test, X_test_recon)
         print("alpha=", alpha, "err=", spca_err)
         if spca_err < best_spca_alpha_err:
             best_spca_alpha_err = spca_err
