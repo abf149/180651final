@@ -1,30 +1,16 @@
-
-from sklearn.decomposition import KernelPCA
 import math
-# Autoencoder imports
-from sklearn.datasets import load_iris
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from matplotlib import pyplot as plt
-from sklearn.preprocessing import MinMaxScaler
-
 import numpy as np
 import os
 import sys
 import sklearn
 import matplotlib as mpl
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA, KernelPCA, SparsePCA
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.datasets import make_swiss_roll
+from sklearn.decomposition import PCA,KernelPCA,SparsePCA,NMF
+from sklearn.datasets import load_iris,make_swiss_roll
 from sklearn.metrics import mean_squared_error
 import math
-
-import numpy as np
-from sklearn.decomposition import NMF
-from sklearn.datasets import load_iris
-import matplotlib.pyplot as plt
-
 
 # TODO: hyperparameter search
 
