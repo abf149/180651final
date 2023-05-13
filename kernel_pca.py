@@ -3,6 +3,7 @@ import scipy
 from scipy import linalg
 from sklearn.metrics import mean_squared_error
 from sklearn.utils.extmath import svd_flip
+from sklearn.preprocessing import MinMaxScaler
 
 # Get the square of l2 norm
 
@@ -63,11 +64,15 @@ def center_kernel(K):
 
 
 def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mode='recon', alpha=1, degree=3):
+    scaler = MinMaxScaler()
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
     if kernel == 'rbf':
-        K = rbf_kernel(X_train, gamma=gamma)
+        K = rbf_kernel(X_train_scaled, gamma=gamma)
     elif kernel == 'poly':
-        K = poly_kernel(X_train, degree=degree)
+        K = poly_kernel(X_train_scaled, degree=degree)
     K, K_fit_rows, K_fit_all = center_kernel(K)
 
     if n_components is None:
@@ -91,7 +96,7 @@ def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mod
     # You are supposed to find eigenvectors of K and then multiply them by K, multiplying a matrix and its eigenvector results in the same eigenvector scaled by the eigenvalue (by definition).
     X_transformed = eigenvectors * np.sqrt(eigenvalues)
 
-    K = rbf_kernel(X_test, X_train, gamma)
+    K = rbf_kernel(X_test_scaled, X_train_scaled, gamma)
     # Compute centered gram matrix between X_test and training data X_train
     K_pred_cols = (np.sum(K, axis=1) / K_fit_rows.shape[0])[:, np.newaxis]
     K -= K_fit_rows
@@ -115,11 +120,12 @@ def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mod
         elif kernel == 'poly':
             K = poly_kernel(X_transformed, degree=degree)
         K.flat[:: n_samples + 1] += alpha
-        dual_coef = linalg.solve(K, X_train, assume_a="pos", overwrite_a=True)
+        dual_coef = linalg.solve(
+            K, X_train_scaled, assume_a="pos", overwrite_a=True)
         if kernel == 'rbf':
             K = rbf_kernel(X_test_transformed, X_transformed, gamma=gamma)
         elif kernel == 'poly':
             K = poly_kernel(X_test_transformed, X_transformed, degree=degree)
         X_test_recon = np.dot(K, dual_coef)
-        err = mean_squared_error(X_test, X_test_recon)
+        err = mean_squared_error(X_test_scaled, X_test_recon)
         return X_test_recon, err
