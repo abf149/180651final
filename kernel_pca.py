@@ -135,5 +135,6 @@ def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mod
         if scaled:
             X_test_recon = scaler.inverse_transform(X_test_recon)
         err = mean_squared_error(X_test, X_test_recon)
+        print('\n\n Own rbf kpca implementation')
         print(f'{kernel} kernel, mse err = {err}')
         return X_test_recon, err
