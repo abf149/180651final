@@ -147,14 +147,19 @@ def autoencoder_exp(X_train, X_test, k):
     optimizer = 'adam'
     loss = 'mse'
 
-    input_layer = tf.keras.Input(shape=(input_dim,), name='input') # input layer
-    encoding_layer = tf.keras.layers.Dense(encoding_dim, activation='relu', name='encoding')(input_layer) # encoding layer
-    decoding_layer = tf.keras.layers.Dense(output_dim, activation='sigmoid', name='decoding')(encoding_layer) # decoding layer
+    input_layer = tf.keras.Input(
+        shape=(input_dim,), name='input')  # input layer
+    encoding_layer = tf.keras.layers.Dense(
+        encoding_dim, activation='relu', name='encoding')(input_layer)  # encoding layer
+    decoding_layer = tf.keras.layers.Dense(
+        output_dim, activation='sigmoid', name='decoding')(encoding_layer)  # decoding layer
 
-    input_layer = tf.keras.Input(shape=(input_dim,), name='input') # input layer
-    encoding_layer = tf.keras.layers.Dense(encoding_dim, name='encoding')(input_layer) # encoding layer
-    decoding_layer = tf.keras.layers.Dense(output_dim, name='decoding')(encoding_layer) # decoding layer
-
+    input_layer = tf.keras.Input(
+        shape=(input_dim,), name='input')  # input layer
+    encoding_layer = tf.keras.layers.Dense(
+        encoding_dim, name='encoding')(input_layer)  # encoding layer
+    decoding_layer = tf.keras.layers.Dense(
+        output_dim, name='decoding')(encoding_layer)  # decoding layer
 
     autoencoder = tf.keras.Model(input_layer, decoding_layer)
     autoencoder.compile(optimizer=optimizer, loss=loss)
@@ -231,3 +236,31 @@ def nmf_exp(X_train, X_test, k):
     print('Best MSE reconstruction error on test data:', test_mse)
 
     return train_mse, test_mse
+
+
+def nmf_exp_faces(X_train, X_test, k, h, w):
+    print("\n\nBest NMF:")
+
+    # Perform NMF
+    model = NMF(n_components=k, init='random', random_state=109)
+    W_train = model.fit_transform(X_train)
+    H_train = model.components_
+    eigenfaces_nmf = model.components_.reshape((k, h, w))
+
+    # Print the basis vectors and the coefficients
+    print("Basis vectors:\n", H_train)
+    print("Coefficients:\n", W_train)
+
+    # Reconstruct train data and compute MSE
+    X_train_reconstructed = np.dot(W_train, H_train)
+    train_mse = np.mean((X_train - X_train_reconstructed) ** 2)
+    print('\n\nBest MSE reconstruction error on train data:', train_mse)
+
+    # Reconstruct test data and compute MSE
+    W_test = model.transform(X_test)
+    H_test = model.components_
+    X_test_reconstructed = np.dot(W_test, H_test)
+    test_mse = np.mean((X_test - X_test_reconstructed) ** 2)
+    print('Best MSE reconstruction error on test data:', test_mse)
+
+    return train_mse, test_mse, eigenfaces_nmf
