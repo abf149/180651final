@@ -12,10 +12,6 @@ from sklearn.datasets import load_iris,make_swiss_roll
 from sklearn.metrics import mean_squared_error
 import math
 
-# TODO: hyperparameter search
-
-# SparsePCA(n_components=k, alpha=1, ridge_alpha=0.01, max_iter=1000, tol=1e-08, method='lars', n_jobs=1, U_init=None, V_init=None, verbose=False, random_state=None)
-
 def spca_exp(X_train, X_test, k):
     scaler = MinMaxScaler()
     scaler.fit(X_train)
@@ -33,7 +29,8 @@ def spca_exp(X_train, X_test, k):
         spca.fit(X_train_scaled)
         X_test_reduced = spca.transform(X_test_scaled)
         X_test_recon = spca.inverse_transform(X_test_reduced)
-        spca_err = mean_squared_error(X_test_scaled, X_test_recon)
+        
+        spca_err = mean_squared_error(X_test, scaler.inverse_transform(X_test_recon))
         print("alpha=", alpha, "err=", spca_err)
         if spca_err < best_spca_alpha_err:
             best_spca_alpha_err = spca_err
@@ -103,7 +100,7 @@ def kernel_exp(X_train, X_test, k):
         pca.fit(X_train_scaled)
         X_test_reduced = pca.transform(X_test_scaled)
         X_test_preimage = pca.inverse_transform(X_test_reduced)
-        err = mean_squared_error(X_test_scaled, X_test_preimage)
+        err = mean_squared_error(X_test, scaler.inverse_transform(X_test_preimage))
         print("Kernel PCA (", title, ") MSE reconstruction loss:", err)
         if err < best_kernel_err:
             best_kernel = title
@@ -205,9 +202,9 @@ def autoencoder_exp(X_train, X_test, k):
     print("MSE on training data:", autoencoder_err_train)
     print("MSE on test data:", autoencoder_err_test)
 
-    if k == 2:  # can only plot if there are 2 dims
-        encoder = tf.keras.Model(input_layer, encoding_layer)
-        encoded_data = encoder.predict(X_train_scaled)
+#    if k == 2:  # can only plot if there are 2 dims
+#        encoder = tf.keras.Model(input_layer, encoding_layer)
+#        encoded_data = encoder.predict(X_train_scaled)
 
 #         target_names = iris.target_names
 
