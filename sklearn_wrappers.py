@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 # TODO: hyperparameter search
 
-#SparsePCA(n_components=k, alpha=1, ridge_alpha=0.01, max_iter=1000, tol=1e-08, method='lars', n_jobs=1, U_init=None, V_init=None, verbose=False, random_state=None)
+# SparsePCA(n_components=k, alpha=1, ridge_alpha=0.01, max_iter=1000, tol=1e-08, method='lars', n_jobs=1, U_init=None, V_init=None, verbose=False, random_state=None)
 
 def spca_exp(X_scaled,k):
     alpha_vals=[0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.10, 0.20, 0.50, 1.0, 2.0, 5.0]
@@ -101,9 +101,69 @@ def plot3clusters(X, title, vtitle, target_names):
     
     plt.show()  
 
-def autoencoder_exp(X_scaled, k):
-    input_dim = X_scaled.shape[1] #input shape
-    output_dim = X_scaled.shape[1]
+# +
+# def autoencoder_exp(X_scaled, k):
+#     input_dim = X_scaled.shape[1] #input shape
+#     output_dim = X_scaled.shape[1]
+#     encoding_dim = k # encoding dimension - #neurons for the dense layers
+#     optimizer = 'adam'
+#     loss = 'mse'
+
+#     input_layer = tf.keras.Input(shape=(input_dim,), name='input') # input layer
+#     encoding_layer = tf.keras.layers.Dense(encoding_dim, name='encoding')(input_layer) # encoding layer
+#     decoding_layer = tf.keras.layers.Dense(output_dim, name='decoding')(encoding_layer) # decoding layer
+
+#     autoencoder = tf.keras.Model(input_layer, decoding_layer)
+#     autoencoder.compile(optimizer=optimizer, loss=loss)
+#     autoencoder.summary()
+    
+#     # Set other parameters
+#     epochs=50
+#     batch_size=16
+#     shuffle=True
+#     validation_split=0.1
+#     verbose=0
+
+#     # early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, verbose=1)
+
+#     history = autoencoder.fit(X_scaled, X_scaled,
+#                               epochs=epochs,
+#                               batch_size=batch_size,
+#                               shuffle=shuffle,
+#                               validation_split=validation_split,
+#                               verbose=verbose)
+#     #                           callbacks=[early_stop])
+
+#     # Plot the loss 
+#     plt.plot(history.history['loss'], color='#FF7E79',linewidth=3, alpha=0.5)
+#     plt.plot(history.history['val_loss'], color='#007D66', linewidth=3, alpha=0.4)
+#     plt.title('Model train vs Validation loss')
+#     plt.ylabel('Loss')
+#     plt.xlabel('Epoch')
+#     plt.legend(['Train', 'Validation'], loc='best')
+#     plt.grid(True)
+#     plt.show()    
+    
+#     print("Training loss:", history.history['loss'][-1])
+#     print("Validation loss:", history.history['val_loss'][-1])    
+    
+#     if k==2: # can only plot if there are 2dims
+#         encoder = tf.keras.Model(input_layer, encoding_layer)
+#         encoded_data = encoder.predict(X_scaled)
+
+#         #target_names = iris.target_names
+
+#         #plot3clusters(encoded_data, 'Encoded data latent-space', 'dimension ', target_names);  
+        
+#     autoencoder_err=mean_squared_error(X_scaled, autoencoder(X_scaled))
+#     print("MSE=",autoencoder_err)
+    
+#     return None, autoencoder_err
+
+# +
+def autoencoder_exp(X_train, X_test, k):
+    input_dim = X_train.shape[1] # input shape
+    output_dim = X_train.shape[1]
     encoding_dim = k # encoding dimension - #neurons for the dense layers
     optimizer = 'adam'
     loss = 'mse'
@@ -117,24 +177,21 @@ def autoencoder_exp(X_scaled, k):
     autoencoder.summary()
     
     # Set other parameters
-    epochs=50
-    batch_size=16
-    shuffle=True
-    validation_split=0.1
-    verbose=0
+    epochs = 50
+    batch_size = 16
+    shuffle = True
+    validation_split = 0.1
+    verbose = 0
 
-    # early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, verbose=1)
-
-    history = autoencoder.fit(X_scaled, X_scaled,
+    history = autoencoder.fit(X_train, X_train,
                               epochs=epochs,
                               batch_size=batch_size,
                               shuffle=shuffle,
                               validation_split=validation_split,
                               verbose=verbose)
-    #                           callbacks=[early_stop])
 
     # Plot the loss 
-    plt.plot(history.history['loss'], color='#FF7E79',linewidth=3, alpha=0.5)
+    plt.plot(history.history['loss'], color='#FF7E79', linewidth=3, alpha=0.5)
     plt.plot(history.history['val_loss'], color='#007D66', linewidth=3, alpha=0.4)
     plt.title('Model train vs Validation loss')
     plt.ylabel('Loss')
@@ -144,20 +201,24 @@ def autoencoder_exp(X_scaled, k):
     plt.show()    
     
     print("Training loss:", history.history['loss'][-1])
-    print("Validation loss:", history.history['val_loss'][-1])    
+    print("Validation loss:", history.history['val_loss'][-1])
     
-    if k==2: # can only plot if there are 2dims
+    # Compute MSE on train and test data
+    autoencoder_err_train = mean_squared_error(X_train, autoencoder(X_train))
+    autoencoder_err_test = mean_squared_error(X_test, autoencoder(X_test))
+    print("MSE on training data:", autoencoder_err_train)
+    print("MSE on test data:", autoencoder_err_test)
+    
+    if k == 2: # can only plot if there are 2 dims
         encoder = tf.keras.Model(input_layer, encoding_layer)
-        encoded_data = encoder.predict(X_scaled)
+        encoded_data = encoder.predict(X_train)
 
-        #target_names = iris.target_names
+#         target_names = iris.target_names
 
-        #plot3clusters(encoded_data, 'Encoded data latent-space', 'dimension ', target_names);  
+#         plot3clusters(encoded_data, 'Encoded data latent-space', 'dimension ', target_names);  
         
-    autoencoder_err=mean_squared_error(X_scaled, autoencoder(X_scaled))
-    print("MSE=",autoencoder_err)
-    
-    return None, autoencoder_err
+    return autoencoder_err_train, autoencoder_err_test
+# -
 
 
 
