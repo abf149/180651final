@@ -102,65 +102,6 @@ def plot3clusters(X, title, vtitle, target_names):
     plt.show()  
 
 # +
-# def autoencoder_exp(X_scaled, k):
-#     input_dim = X_scaled.shape[1] #input shape
-#     output_dim = X_scaled.shape[1]
-#     encoding_dim = k # encoding dimension - #neurons for the dense layers
-#     optimizer = 'adam'
-#     loss = 'mse'
-
-#     input_layer = tf.keras.Input(shape=(input_dim,), name='input') # input layer
-#     encoding_layer = tf.keras.layers.Dense(encoding_dim, name='encoding')(input_layer) # encoding layer
-#     decoding_layer = tf.keras.layers.Dense(output_dim, name='decoding')(encoding_layer) # decoding layer
-
-#     autoencoder = tf.keras.Model(input_layer, decoding_layer)
-#     autoencoder.compile(optimizer=optimizer, loss=loss)
-#     autoencoder.summary()
-    
-#     # Set other parameters
-#     epochs=50
-#     batch_size=16
-#     shuffle=True
-#     validation_split=0.1
-#     verbose=0
-
-#     # early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, verbose=1)
-
-#     history = autoencoder.fit(X_scaled, X_scaled,
-#                               epochs=epochs,
-#                               batch_size=batch_size,
-#                               shuffle=shuffle,
-#                               validation_split=validation_split,
-#                               verbose=verbose)
-#     #                           callbacks=[early_stop])
-
-#     # Plot the loss 
-#     plt.plot(history.history['loss'], color='#FF7E79',linewidth=3, alpha=0.5)
-#     plt.plot(history.history['val_loss'], color='#007D66', linewidth=3, alpha=0.4)
-#     plt.title('Model train vs Validation loss')
-#     plt.ylabel('Loss')
-#     plt.xlabel('Epoch')
-#     plt.legend(['Train', 'Validation'], loc='best')
-#     plt.grid(True)
-#     plt.show()    
-    
-#     print("Training loss:", history.history['loss'][-1])
-#     print("Validation loss:", history.history['val_loss'][-1])    
-    
-#     if k==2: # can only plot if there are 2dims
-#         encoder = tf.keras.Model(input_layer, encoding_layer)
-#         encoded_data = encoder.predict(X_scaled)
-
-#         #target_names = iris.target_names
-
-#         #plot3clusters(encoded_data, 'Encoded data latent-space', 'dimension ', target_names);  
-        
-#     autoencoder_err=mean_squared_error(X_scaled, autoencoder(X_scaled))
-#     print("MSE=",autoencoder_err)
-    
-#     return None, autoencoder_err
-
-# +
 def autoencoder_exp(X_train, X_test, k):
     input_dim = X_train.shape[1] # input shape
     output_dim = X_train.shape[1]
@@ -222,22 +163,31 @@ def autoencoder_exp(X_train, X_test, k):
 
 
 
-def nmf_exp(X,k):
-    print("\n\nBest NMF:")    
+def nmf_exp(X_train,X_test, k):
+    print("\n\nBest NMF:")  
     
     # Perform NMF
     model = NMF(n_components=k, init='random', random_state=109)
-    W = model.fit_transform(X)
-    H = model.components_
-
+    W_train = model.fit_transform(X_train)
+    H_train = model.components_
+    
     # Print the basis vectors and the coefficients
-    print("Basis vectors:\n", H)
-    print("Coefficients:\n", W)    
+    print("Basis vectors:\n", H_train)
+    print("Coefficients:\n", W_train) 
     
-    X_reconstructed = np.dot(W, H)
 
-    # Compute the MSE
-    mse = np.mean((X - X_reconstructed) ** 2)
-    print('\n\nBest MSE reconstruction error:', mse)    
+    # Reconstruct train data and compute MSE
+    X_train_reconstructed = np.dot(W_train, H_train)
+    train_mse = np.mean((X_train - X_train_reconstructed) ** 2)
+    print('\n\nBest MSE reconstruction error on train data:', train_mse)    
     
-    return None, mse
+    # Reconstruct test data and compute MSE
+    W_test = model.transform(X_test)
+    H_test = model.components_
+    X_test_reconstructed = np.dot(W_test, H_test)
+    test_mse = np.mean((X_test - X_test_reconstructed) ** 2)
+    print('Best MSE reconstruction error on test data:', test_mse)    
+
+   
+    
+    return train_mse, test_mse
