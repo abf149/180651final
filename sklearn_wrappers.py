@@ -60,7 +60,7 @@ def spca_exp_faces(X_train, X_test, k, h, w):
         spca.fit(X_train)
         X_test_reduced = spca.transform(X_test)
         X_test_recon = spca.inverse_transform(X_test_reduced)
-        spca_err = mean_squared_error(X_test, X_test_recon)
+        spca_err = mean_squared_error(X_test, scaler.inverse_transform(X_test_recon))
         print("alpha=", alpha, "err=", spca_err)
         if spca_err < best_spca_alpha_err:
             best_spca_alpha_err = spca_err
