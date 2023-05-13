@@ -6,6 +6,7 @@ from sklearn.datasets import load_iris
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from matplotlib import pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
 
 import numpy as np
 import os
