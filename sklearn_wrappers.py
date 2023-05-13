@@ -76,7 +76,7 @@ def spca_exp_faces(X_train, X_test, k, h, w):
 
     return best_spca_alpha, best_spca_alpha_err, best_eigenfaces_spca
 
-def kernel_exp(X_train, X_test, k):
+def kernel_exp(X_train, X_test, k,no_sigmoid=False):
     scaler = StandardScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
@@ -89,8 +89,11 @@ def kernel_exp(X_train, X_test, k):
     sig_pca = KernelPCA(n_components=k, kernel="sigmoid",
                         gamma=0.001, coef0=1, fit_inverse_transform=True)
 
-    kernel_options = ((131, lin_pca, "Linear kernel"), (132, rbf_pca, "RBF kernel, $\gamma=0.04$"),
-                      (133, sig_pca, "Sigmoid kernel, $\gamma=10^{-3}, r=1$"))
+    if no_sigmoid:
+        kernel_options = ((131, lin_pca, "Linear kernel"), (132, rbf_pca, "RBF kernel, $\gamma=0.04$"))        
+    else:
+        kernel_options = ((131, lin_pca, "Linear kernel"), (132, rbf_pca, "RBF kernel, $\gamma=0.04$"),
+                          (133, sig_pca, "Sigmoid kernel, $\gamma=10^{-3}, r=1$"))
 
     best_kernel = ""
     best_kernel_err = math.inf
