@@ -110,8 +110,8 @@ def autoencoder_exp(X_train, X_test, k):
     loss = 'mse'
 
     input_layer = tf.keras.Input(shape=(input_dim,), name='input') # input layer
-    encoding_layer = tf.keras.layers.Dense(encoding_dim, name='encoding')(input_layer) # encoding layer
-    decoding_layer = tf.keras.layers.Dense(output_dim, name='decoding')(encoding_layer) # decoding layer
+    encoding_layer = tf.keras.layers.Dense(encoding_dim, activation='relu', name='encoding')(input_layer) # encoding layer
+    decoding_layer = tf.keras.layers.Dense(output_dim, activation='sigmoid', name='decoding')(encoding_layer) # decoding layer
 
     autoencoder = tf.keras.Model(input_layer, decoding_layer)
     autoencoder.compile(optimizer=optimizer, loss=loss)
