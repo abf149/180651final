@@ -63,11 +63,15 @@ def center_kernel(K):
 # switch the mode to either 'transform' or 'recon'
 
 
-def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mode='recon', alpha=1, degree=3):
-    scaler = MinMaxScaler()
-    scaler.fit(X_train)
-    X_train_scaled = scaler.transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mode='recon', alpha=1, degree=3, scaled=True):
+    if scaled:
+        scaler = MinMaxScaler()
+        scaler.fit(X_train)
+        X_train_scaled = scaler.transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
+    else:
+        X_train_scaled = X_train
+        X_test_scaled = X_test
 
     if kernel == 'rbf':
         K = rbf_kernel(X_train_scaled, gamma=gamma)
