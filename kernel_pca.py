@@ -131,5 +131,7 @@ def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mod
         elif kernel == 'poly':
             K = poly_kernel(X_test_transformed, X_transformed, degree=degree)
         X_test_recon = np.dot(K, dual_coef)
-        err = mean_squared_error(X_test_scaled, X_test_recon)
+        if scaled:
+            X_test_recon = scaler.inverse_transform(X_test_recon)
+        err = mean_squared_error(X_test, X_test_recon)
         return X_test_recon, err
