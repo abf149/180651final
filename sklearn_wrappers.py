@@ -76,11 +76,6 @@ def spca_exp_faces(X_train, X_test, k, h, w):
 
     return best_spca_alpha, best_spca_alpha_err, best_eigenfaces_spca
 
-
-# Drawing on inspiration from https://docs.google.com/document/d/1lmaQowAhgf1OLbnSjl3X20j1idh-BdaQPZTrJslSJc0/edit "Kernel PCA" section
-# TODO: hyperparameter sweep for kernel, gamma, coef0, other attributes
-
-
 def kernel_exp(X_train, X_test, k):
     scaler = StandardScaler()
     scaler.fit(X_train)
