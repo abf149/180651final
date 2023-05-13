@@ -57,8 +57,7 @@ def spca_exp(X_scaled, k):
 
 def spca_exp_faces(X_scaled, k, h, w):
     # h is the height of each face, w is the width of each face
-    alpha_vals = [0.001, 0.002, 0.005, 0.01, 0.02,
-                  0.05, 0.10, 0.20, 0.50, 1.0, 2.0, 5.0]
+    alpha_vals = [0.001, 0.002, 0.005, 0.01, 0.02]
     ridge_alpha = 0.0
 
     best_spca_alpha = 0.0
