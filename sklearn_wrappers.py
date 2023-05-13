@@ -177,12 +177,14 @@ def autoencoder_exp(X_train, X_test, k):
     validation_split = 0.1
     verbose = 0
 
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=100)
     history = autoencoder.fit(X_train_scaled, X_train_scaled,
                               epochs=epochs,
                               batch_size=batch_size,
                               shuffle=shuffle,
                               validation_split=validation_split,
-                              verbose=verbose)
+                              verbose=verbose,
+                              callbacks=[callback])
 
     # Plot the loss
     plt.plot(history.history['loss'], color='#FF7E79', linewidth=3, alpha=0.5)
@@ -215,7 +217,8 @@ def nmf_exp(X_train, X_test, k):
     scaler = MinMaxScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
-    X_test_scaled = scaler.transform(X_test)    
+    X_test_scaled = scaler.transform(X_test)   
+    X_test_scaled[X_test_scaled<0]=0 # clip scaled test data on the low end
     
     # Perform NMF
     model = NMF(n_components=k, init='random', random_state=109)
@@ -253,7 +256,8 @@ def nmf_exp_faces(X_train, X_test, k, h, w):
     scaler = MinMaxScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
-    X_test_scaled = scaler.transform(X_test)      
+    X_test_scaled = scaler.transform(X_test)   
+    X_test_scaled[X_test_scaled<0]=0 # clip scaled test data on the low end
     
     # Perform NMF
     model = NMF(n_components=k, init='random', random_state=109)
