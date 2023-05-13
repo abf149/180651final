@@ -85,7 +85,7 @@ def spca_exp_faces(X_train, X_test, k, h, w):
 # TODO: hyperparameter sweep for kernel, gamma, coef0, other attributes
 
 
-def kernel_exp(X_scaled, k):
+def kernel_exp(X_train, X_test, k):
 
     lin_pca = KernelPCA(n_components=k, kernel="linear",
                         fit_inverse_transform=True)
@@ -100,9 +100,10 @@ def kernel_exp(X_scaled, k):
     best_kernel = ""
     best_kernel_err = math.inf
     for subplot, pca, title in kernel_options:
-        X_reduced = pca.fit_transform(X_scaled)
-        X_preimage = pca.inverse_transform(X_reduced)
-        err = mean_squared_error(X_scaled, X_preimage)
+        pca.fit(X_train)
+        X_test_reduced = pca.transform(X_test)
+        X_test_preimage = pca.inverse_transform(X_test_reduced)
+        err = mean_squared_error(X_test, X_test_preimage)
         print("Kernel PCA (", title, ") MSE reconstruction loss:", err)
         if err < best_kernel_err:
             best_kernel = title
