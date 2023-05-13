@@ -14,6 +14,7 @@ import sklearn
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA, KernelPCA, SparsePCA
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.datasets import make_swiss_roll
 from sklearn.metrics import mean_squared_error
 import math
@@ -29,6 +30,10 @@ import matplotlib.pyplot as plt
 # SparsePCA(n_components=k, alpha=1, ridge_alpha=0.01, max_iter=1000, tol=1e-08, method='lars', n_jobs=1, U_init=None, V_init=None, verbose=False, random_state=None)
 
 def spca_exp(X_train, X_test, k):
+    scaler = MinMaxScaler()
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
     alpha_vals = [0.001, 0.002, 0.005, 0.01, 0.02,
                   0.05, 0.10, 0.20, 0.50, 1.0, 2.0, 5.0]
     ridge_alpha = 0.0
@@ -38,10 +43,10 @@ def spca_exp(X_train, X_test, k):
     for idx in range(len(alpha_vals)):
         alpha = alpha_vals[idx]
         spca = SparsePCA(n_components=k, ridge_alpha=ridge_alpha, alpha=alpha)
-        spca.fit(X_train)
-        X_test_reduced = spca.transform(X_test)
+        spca.fit(X_train_scaled)
+        X_test_reduced = spca.transform(X_test_scaled)
         X_test_recon = spca.inverse_transform(X_test_reduced)
-        spca_err = mean_squared_error(X_test, X_test_recon)
+        spca_err = mean_squared_error(X_test_scaled, X_test_recon)
         print("alpha=", alpha, "err=", spca_err)
         if spca_err < best_spca_alpha_err:
             best_spca_alpha_err = spca_err
@@ -56,6 +61,10 @@ def spca_exp(X_train, X_test, k):
 
 def spca_exp_faces(X_train, X_test, k, h, w):
     # h is the height of each face, w is the width of each face
+    scaler = MinMaxScaler()
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
     alpha_vals = [0.001, 0.002, 0.005, 0.01, 0.02]
     ridge_alpha = 0.0
 
@@ -86,6 +95,10 @@ def spca_exp_faces(X_train, X_test, k, h, w):
 
 
 def kernel_exp(X_train, X_test, k):
+    scaler = MinMaxScaler()
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
     lin_pca = KernelPCA(n_components=k, kernel="linear",
                         fit_inverse_transform=True)
@@ -100,10 +113,10 @@ def kernel_exp(X_train, X_test, k):
     best_kernel = ""
     best_kernel_err = math.inf
     for subplot, pca, title in kernel_options:
-        pca.fit(X_train)
-        X_test_reduced = pca.transform(X_test)
+        pca.fit(X_train_scaled)
+        X_test_reduced = pca.transform(X_test_scaled)
         X_test_preimage = pca.inverse_transform(X_test_reduced)
-        err = mean_squared_error(X_test, X_test_preimage)
+        err = mean_squared_error(X_test_scaled, X_test_preimage)
         print("Kernel PCA (", title, ") MSE reconstruction loss:", err)
         if err < best_kernel_err:
             best_kernel = title
@@ -141,8 +154,12 @@ def plot3clusters(X, title, vtitle, target_names):
 
 
 def autoencoder_exp(X_train, X_test, k):
-    input_dim = X_train.shape[1]  # input shape
-    output_dim = X_train.shape[1]
+    scaler = MinMaxScaler()
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+    input_dim = X_train_scaled.shape[1]  # input shape
+    output_dim = X_train_scaled.shape[1]
     encoding_dim = k  # encoding dimension - #neurons for the dense layers
     optimizer = 'adam'
     loss = 'mse'
@@ -172,7 +189,7 @@ def autoencoder_exp(X_train, X_test, k):
     validation_split = 0.1
     verbose = 0
 
-    history = autoencoder.fit(X_train, X_train,
+    history = autoencoder.fit(X_train_scaled, X_train_scaled,
                               epochs=epochs,
                               batch_size=batch_size,
                               shuffle=shuffle,
@@ -194,14 +211,16 @@ def autoencoder_exp(X_train, X_test, k):
     print("Validation loss:", history.history['val_loss'][-1])
 
     # Compute MSE on train and test data
-    autoencoder_err_train = mean_squared_error(X_train, autoencoder(X_train))
-    autoencoder_err_test = mean_squared_error(X_test, autoencoder(X_test))
+    autoencoder_err_train = mean_squared_error(
+        X_train_scaled, autoencoder(X_train_scaled))
+    autoencoder_err_test = mean_squared_error(
+        X_test_scaled, autoencoder(X_test_scaled))
     print("MSE on training data:", autoencoder_err_train)
     print("MSE on test data:", autoencoder_err_test)
 
     if k == 2:  # can only plot if there are 2 dims
         encoder = tf.keras.Model(input_layer, encoding_layer)
-        encoded_data = encoder.predict(X_train)
+        encoded_data = encoder.predict(X_train_scaled)
 
 #         target_names = iris.target_names
 
