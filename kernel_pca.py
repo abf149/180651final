@@ -3,7 +3,7 @@ import scipy
 from scipy import linalg
 from sklearn.metrics import mean_squared_error
 from sklearn.utils.extmath import svd_flip
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 # Get the square of l2 norm
 
@@ -65,7 +65,7 @@ def center_kernel(K):
 
 def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mode='recon', alpha=1, degree=3, scaled=True):
     if scaled:
-        scaler = MinMaxScaler()
+        scaler = StandardScaler()
         scaler.fit(X_train)
         X_train_scaled = scaler.transform(X_train)
         X_test_scaled = scaler.transform(X_test)
@@ -134,6 +134,6 @@ def kernel_PCA(X_train, X_test, n_components=None, kernel='rbf', gamma=None, mod
         if scaled:
             X_test_recon = scaler.inverse_transform(X_test_recon)
         err = mean_squared_error(X_test, X_test_recon)
-        print('\n\n Own rbf kpca implementation')
+        print('\n\nOwn rbf kpca implementation')
         print(f'{kernel} kernel, mse err = {err}')
         return X_test_recon, err

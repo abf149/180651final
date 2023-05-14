@@ -24,7 +24,7 @@ def pca_exp(X_train, X_test, k):
     X_test_recon = pca.inverse_transform(X_test_reduced)
     pca_err = mean_squared_error(
         X_test, scaler.inverse_transform(X_test_recon))
-    print(f'\nStandard PCA err: {pca_err}')
+    print(f'\nStandard PCA err: {pca_err}\n')
     return pca.components_, pca_err
 
 
@@ -106,7 +106,7 @@ def kernel_exp(X_train, X_test, k, no_sigmoid=False):
                         gamma=0.001, coef0=1, fit_inverse_transform=True)
 
     if no_sigmoid:
-        kernel_options = ((132, rbf_pca, "RBF kernel, $\gamma=0.04$"))
+        kernel_options = [(132, rbf_pca, "RBF kernel, $\gamma=0.04$")]
     else:
         kernel_options = ((132, rbf_pca, "RBF kernel, $\gamma=0.04$"),
                           (133, sig_pca, "Sigmoid kernel, $\gamma=10^{-3}, r=1$"))
