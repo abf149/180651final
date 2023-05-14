@@ -76,7 +76,8 @@ def spca_exp_faces(X_train, X_test, k, h, w):
 
     return best_spca_alpha, best_spca_alpha_err, best_eigenfaces_spca
 
-def kernel_exp(X_train, X_test, k,no_sigmoid=False):
+
+def kernel_exp(X_train, X_test, k, no_sigmoid=False):
     scaler = StandardScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
@@ -90,7 +91,8 @@ def kernel_exp(X_train, X_test, k,no_sigmoid=False):
                         gamma=0.001, coef0=1, fit_inverse_transform=True)
 
     if no_sigmoid:
-        kernel_options = ((131, lin_pca, "Linear kernel"), (132, rbf_pca, "RBF kernel, $\gamma=0.04$"))        
+        kernel_options = ((131, lin_pca, "Linear kernel"),
+                          (132, rbf_pca, "RBF kernel, $\gamma=0.04$"))
     else:
         kernel_options = ((131, lin_pca, "Linear kernel"), (132, rbf_pca, "RBF kernel, $\gamma=0.04$"),
                           (133, sig_pca, "Sigmoid kernel, $\gamma=10^{-3}, r=1$"))
@@ -209,15 +211,17 @@ def autoencoder_exp(X_train, X_test, k):
 
     return autoencoder_err_train, autoencoder_err_test
 
+
 def nmf_exp(X_train, X_test, k):
     print("\n\nBest NMF:")
 
     scaler = MinMaxScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
-    X_test_scaled = scaler.transform(X_test)   
-    X_test_scaled[X_test_scaled<0]=0 # clip scaled test data on the low end
-    
+    X_test_scaled = scaler.transform(X_test)
+    # clip scaled test data on the low end
+    X_test_scaled[X_test_scaled < 0] = 0
+
     # Perform NMF
     model = NMF(n_components=k, init='random', random_state=109)
     W_train = model.fit_transform(X_train_scaled)
@@ -229,20 +233,20 @@ def nmf_exp(X_train, X_test, k):
 
     # Reconstruct train data and compute MSE
     X_train_reconstructed = np.dot(W_train, H_train)
-    
+
     train_mse = mean_squared_error(
-        X_train, scaler.inverse_transform(X_train_reconstructed))    
-    
+        X_train, scaler.inverse_transform(X_train_reconstructed))
+
     print('\n\nBest MSE reconstruction error on train data:', train_mse)
 
     # Reconstruct test data and compute MSE
     W_test = model.transform(X_test_scaled)
     H_test = model.components_
     X_test_reconstructed = np.dot(W_test, H_test)
-    
+
     test_mse = mean_squared_error(
         X_test, scaler.inverse_transform(X_test_reconstructed))
-    
+
     print('Best MSE reconstruction error on test data:', test_mse)
 
     return train_mse, test_mse
@@ -254,9 +258,10 @@ def nmf_exp_faces(X_train, X_test, k, h, w):
     scaler = MinMaxScaler()
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
-    X_test_scaled = scaler.transform(X_test)   
-    X_test_scaled[X_test_scaled<0]=0 # clip scaled test data on the low end
-    
+    X_test_scaled = scaler.transform(X_test)
+    # clip scaled test data on the low end
+    X_test_scaled[X_test_scaled < 0] = 0
+
     # Perform NMF
     model = NMF(n_components=k, init='random', random_state=109)
     W_train = model.fit_transform(X_train_scaled)
@@ -270,7 +275,7 @@ def nmf_exp_faces(X_train, X_test, k, h, w):
     # Reconstruct train data and compute MSE
     X_train_reconstructed = np.dot(W_train, H_train)
     train_mse = mean_squared_error(
-        X_train, scaler.inverse_transform(X_train_reconstructed))   
+        X_train, scaler.inverse_transform(X_train_reconstructed))
     print('\n\nBest MSE reconstruction error on train data:', train_mse)
 
     # Reconstruct test data and compute MSE
@@ -282,3 +287,22 @@ def nmf_exp_faces(X_train, X_test, k, h, w):
     print('Best MSE reconstruction error on test data:', test_mse)
 
     return train_mse, test_mse, eigenfaces_nmf
+
+
+def plot_gallery(images, titles, k, h, w):
+    """Helper function to plot a gallery of portraits"""
+    n_col = 5
+    if k <= n_col:
+        n_row = 1
+    else:
+        n_row = k // 5 + 1
+    plt.figure(figsize=(1.8 * n_col, 2.4 * n_row))
+    plt.subplots_adjust(bottom=0, left=.01, right=.99, top=.90, hspace=.35)
+    for i in range(n_row * n_col):
+        if i == k:
+            break
+        plt.subplot(n_row, n_col, i + 1)
+        plt.imshow(images[i].reshape((h, w)), cmap=plt.cm.gray)
+        plt.title(titles[i], size=12)
+        plt.xticks(())
+        plt.yticks(())
